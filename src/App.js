@@ -15,8 +15,6 @@ function App() {
 
 	useEffect(_ => {
         if (google === null) {
-			console.log(23);
-			console.log(google);
             const loader = new Loader(GOOGLE_API_KEY, options);
             loader.load().then(google => {setGoogle(google)});
         }
@@ -61,7 +59,6 @@ function App() {
     }, [mapRef, google, map, setMap]);
 
 	const handleScroll = async (event) => {
-		event.preventDefault();
 		const SCALE_MULTIPLICATOR = 1.1;
 		const SCROLL_TYPE = {
 			UP: 'UP',
@@ -79,7 +76,6 @@ function App() {
 		
 		const maxZoom = (await maxZoomService.getMaxZoomAtLatLng(map.getCenter())).zoom
 		const currentZoom = map.getZoom();
-		console.log(currentZoom, maxZoom, scale);
 
 		// TODO scroll back works bad
 
@@ -96,6 +92,11 @@ function App() {
 				} else {
 					map.setZoom(maxZoom);
 					setScale(newScale);
+					window.scrollTo(0, 0);
+
+					setTimeout(() => {
+						window.scrollTo(0, 0);
+					}, 10)
 				}
 			}
 		}
@@ -108,7 +109,6 @@ function App() {
 		style={{transform: 'scale(' + scale + ')'}} 
 		ref={mapRef}
 		onWheel={handleScroll}
-		onScroll={(event) => event.preventDefault()}
 	>
       
     </div>
