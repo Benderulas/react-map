@@ -10,7 +10,6 @@ function App() {
 	const [map, setMap] = useState(null);
 	const [scale, setScale] = useState(1);
 	const [maxZoomService, setMaxZoomService] = useState(null);
-	const [currentCenter, setCurrentCenter] = useState(null);
 
 	const options = {libraries: ["maps", "marker"]};
 
