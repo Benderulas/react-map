@@ -10,6 +10,7 @@ function App() {
 	const [map, setMap] = useState(null);
 	const [scale, setScale] = useState(1);
 	const [maxZoomService, setMaxZoomService] = useState(null);
+	const [currentCenter, setCurrentCenter] = useState(null);
 
 	const options = {libraries: ["maps", "marker"]};
 
@@ -44,7 +45,7 @@ function App() {
                 fullscreenControl: false,
                 mapTypeId: google.maps.MapTypeId.HYBRID,
 				options: {
-					gestureHandling: 'cooperative '
+					gestureHandling: 'auto'
 				}
             };
 
@@ -83,6 +84,11 @@ function App() {
 
 		if (scroll_type === SCROLL_TYPE.UP) {
 			if (maxZoom <= currentZoom) {
+				if (scale === 1) {
+					map.setOptions({
+						scrollwheel: false
+					});
+				}
 				setScale(scale * SCALE_MULTIPLICATOR);
 			}
 		} else if (scroll_type === SCROLL_TYPE.DOWN) {
@@ -91,8 +97,10 @@ function App() {
 
 				if (newScale <= 1) {
 					setScale(1);
+					map.setOptions({
+						scrollwheel: true
+					});
 				} else {
-					map.setZoom(maxZoom);
 					setScale(newScale);
 				}
 			}
