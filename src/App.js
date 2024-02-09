@@ -42,7 +42,10 @@ function App() {
                 mapTypeControl: false,
                 streetViewControl: false,
                 fullscreenControl: false,
-                mapTypeId: google.maps.MapTypeId.HYBRID
+                mapTypeId: google.maps.MapTypeId.HYBRID,
+				options: {
+					gestureHandling: 'cooperative '
+				}
             };
 
 			const newMap = new google.maps.Map(mapRef.current, mapOptions);
@@ -76,8 +79,7 @@ function App() {
 		
 		const maxZoom = (await maxZoomService.getMaxZoomAtLatLng(map.getCenter())).zoom
 		const currentZoom = map.getZoom();
-
-		// TODO scroll back works bad
+		console.log(map.getCenter().lng(), map.getCenter().lat());
 
 		if (scroll_type === SCROLL_TYPE.UP) {
 			if (maxZoom <= currentZoom) {
@@ -92,11 +94,6 @@ function App() {
 				} else {
 					map.setZoom(maxZoom);
 					setScale(newScale);
-					window.scrollTo(0, 0);
-
-					setTimeout(() => {
-						window.scrollTo(0, 0);
-					}, 10)
 				}
 			}
 		}
@@ -105,7 +102,7 @@ function App() {
   return (
     <div 
 		id="global-map" 
-		className="App" 
+		className="global-map" 
 		style={{transform: 'scale(' + scale + ')'}} 
 		ref={mapRef}
 		onWheel={handleScroll}
