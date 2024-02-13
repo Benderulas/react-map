@@ -24,11 +24,16 @@ function App() {
 	const [maxZoomService, setMaxZoomService] = useState(null);
 	const [center, setCenter] = useState(DEFAULT_MAP_CENTER)
 	const [scale, setScale] = useState(1);
+	const scaleRef = useRef(scale);
 	const [zoom, setZoom] = useState(20);
 	const [maxZoom, setMaxZoom] = useState(21);
 	const [zoomType, setZoomType] = useState(ZOOM_TYPE.GOOGLE);
 
 	const options = {libraries: ["maps", "marker"]};
+
+	useEffect(_ => {
+		scaleRef.current = scale;
+	}, [scale])
 
 	useEffect(_ => {
         if (google === null) {
@@ -69,8 +74,46 @@ function App() {
 				icon: 'http://s1.iconbird.com/ico/0612/MustHave/w16h161339196030StockIndexUp16x16.png',
 				title: "Hello World!",
 				zIndex: 999,
+				draggable: true,
 			  });
 			marker.setMap(newMap);
+
+			newMap.addListener('click', (event) => {
+				var bounds = newMap.getBounds();
+				var topRight = bounds.getNorthEast();
+				var bottomLeft = bounds.getSouthWest();
+
+				console.log(event);
+
+				const width = mapRef.current.offsetWidth;
+				const height = mapRef.current.offsetHeight;
+
+				const lng_base = bottomLeft.lng();
+				const lat_base = topRight.lat();
+
+				const widthpx = (topRight.lng() - bottomLeft.lng()) / width;
+				const heightpx = (bottomLeft.lat() - topRight.lat()) / height;
+
+				const new_x = event.domEvent.x / scaleRef.current + width * (1 - 1 / scaleRef.current) / 2;
+				const new_y = event.domEvent.y / scaleRef.current + height * (1 - 1 / scaleRef.current) / 2;
+
+				let position = {
+					lng: lng_base + new_x * widthpx,
+					lat: lat_base + new_y * heightpx,
+				}
+				console.log (position, event.latLng.lng(), event.latLng.lat());
+
+				new google.maps.Marker({
+					position: position,
+					icon: 'http://s1.iconbird.com/ico/0612/MustHave/w16h161339196030StockIndexUp16x16.png',
+					title: "Hello World!",
+					zIndex: 999,
+					draggable: true,
+					map: newMap,
+				  });
+			})
+
+
 			newMap.addListener('zoom_changed', _ => {
 				setZoom(newMap.getZoom());
 			})
