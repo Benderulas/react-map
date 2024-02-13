@@ -3,13 +3,30 @@ import { useState, useEffect, useRef } from 'react';
 import './App.css';
 
 const GOOGLE_API_KEY = 'AIzaSyBuOglV9VCd8IBixqHKgC87HtX7IQ3Gdoo';
+const DEFAULT_MAP_CENTER = { lat: 43.261001, lng: 28.029099 };
+const GOOGLE_MAP_ID = "d6da02314df5661e";
+const SCALE_MULTIPLICATOR = 1.1;
+const SCROLL_TYPE = {
+	UP: 'UP',
+	DOWN: 'DOWN',
+}
+const ZOOM_TYPE = {
+	GOOGLE: 'GOOGLE',
+	CUSTOM: 'CUSTOM',
+	HYBRID: 'HYBRID',
+}
+
 
 function App() {
 	const mapRef = useRef(null);
 	const [google, setGoogle] = useState(null);
 	const [map, setMap] = useState(null);
-	const [scale, setScale] = useState(1);
 	const [maxZoomService, setMaxZoomService] = useState(null);
+	const [center, setCenter] = useState(DEFAULT_MAP_CENTER)
+	const [scale, setScale] = useState(1);
+	const [zoom, setZoom] = useState(20);
+	const [maxZoom, setMaxZoom] = useState(21);
+	const [zoomType, setZoomType] = useState(ZOOM_TYPE.GOOGLE);
 
 	const options = {libraries: ["maps", "marker"]};
 
@@ -21,14 +38,12 @@ function App() {
     }, [google]);
 
 	useEffect(_ => {
-		const DEFAULT_MAP_CENTER = { lat: 43.261001, lng: 28.029099 };
-		const GOOGLE_MAP_ID = "d6da02314df5661e";
 
         if (google != null && mapRef !== null && map === null) {
             var mapOptions = {
                 tilt: 0,
                 heading: 0,
-                zoom: 30,
+                zoom: 20,
                 center: DEFAULT_MAP_CENTER,
                 mapId: GOOGLE_MAP_ID,
                 mapTypeControlOptions: {
@@ -56,53 +71,79 @@ function App() {
 				zIndex: 999,
 			  });
 			marker.setMap(newMap);
+			newMap.addListener('zoom_changed', _ => {
+				setZoom(newMap.getZoom());
+			})
+			newMap.addListener('center_changed', _ => {
+				const newCenter = newMap.getCenter()
+
+				setCenter({
+					lat: newCenter.lat(),
+					lng: newCenter.lng(),
+				});
+			})
+
             setMap(newMap);
 			setMaxZoomService(new google.maps.MaxZoomService());
         }
     }, [mapRef, google, map, setMap]);
 
-	const handleScroll = async (event) => {
-		const SCALE_MULTIPLICATOR = 1.1;
-		const SCROLL_TYPE = {
-			UP: 'UP',
-			DOWN: 'DOWN',
+	useEffect(_ => {
+		if (maxZoomService !== null) {
+			maxZoomService.getMaxZoomAtLatLng(center)
+				.then((response) => {
+					setMaxZoom(response.zoom);
+				});
 		}
-		let scroll_type = null;
+	}, [maxZoomService, center])
 
-		if (event.deltaY === -100) {
-			scroll_type = SCROLL_TYPE.UP;
-		} else if (event.deltaY === 100) {
-			scroll_type = SCROLL_TYPE.DOWN;
-		} else {
-			return;
+	useEffect(_ => {
+		const wrapper = async () => {
+			if (maxZoom <= zoom && scale === 1 && zoomType !== ZOOM_TYPE.HYBRID) {
+				map.setOptions({
+					scrollwheel: true,
+				});
+	
+				setZoomType(ZOOM_TYPE.HYBRID);
+			} else if (maxZoom > zoom && zoomType !== ZOOM_TYPE.GOOGLE) {
+				map.setOptions({
+					scrollwheel: true,
+				});
+	
+				setZoomType(ZOOM_TYPE.GOOGLE);
+			} else if (scale > 1 && zoomType !== ZOOM_TYPE.CUSTOM) {
+				map.setOptions({
+					scrollwheel: false,
+				});
+	
+				setZoomType(ZOOM_TYPE.CUSTOM);
+			}
+		}
+
+		if (map !== null) {
+			wrapper();
 		}
 		
-		const maxZoom = (await maxZoomService.getMaxZoomAtLatLng(map.getCenter())).zoom
-		const currentZoom = map.getZoom();
-		console.log(map.getCenter().lng(), map.getCenter().lat());
+	}, [scale, zoom, maxZoom, map])
 
-		if (scroll_type === SCROLL_TYPE.UP) {
-			if (maxZoom <= currentZoom) {
-				if (scale === 1) {
-					map.setOptions({
-						scrollwheel: false
-					});
-				}
-				setScale(scale * SCALE_MULTIPLICATOR);
-			}
-		} else if (scroll_type === SCROLL_TYPE.DOWN) {
-			if (scale > 1) {
-				const newScale = scale / SCALE_MULTIPLICATOR;
+	const getScrollType = (event) => {
+		if (event.deltaY === -100) {
+			return SCROLL_TYPE.UP;
+		} else if (event.deltaY === 100) {
+			return SCROLL_TYPE.DOWN;
+		} else {
+			return SCROLL_TYPE.DOWN;
+		}
+	}
 
-				if (newScale <= 1) {
-					setScale(1);
-					map.setOptions({
-						scrollwheel: true
-					});
-				} else {
-					setScale(newScale);
-				}
-			}
+	const handleScroll = async (event) => {
+		let scrollType = getScrollType(event);
+
+
+		if (scrollType == SCROLL_TYPE.UP && (zoomType === ZOOM_TYPE.HYBRID || zoomType === ZOOM_TYPE.CUSTOM)){
+			setScale(scale * SCALE_MULTIPLICATOR);
+		} else if (scrollType == SCROLL_TYPE.DOWN && zoomType === ZOOM_TYPE.CUSTOM) {
+			setScale(Math.max(scale / SCALE_MULTIPLICATOR, 1));
 		}
 	}
 
