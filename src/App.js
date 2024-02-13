@@ -66,7 +66,7 @@ function App() {
 			const newMap = new google.maps.Map(mapRef.current, mapOptions);
 			const marker = new google.maps.Marker({
 				position: DEFAULT_MAP_CENTER,
-				icon: 'http://s1.iconbird.com/ico/0612/vistabasesoftwareicons/w24h241339252457BoxOrange6.png',
+				icon: 'http://s1.iconbird.com/ico/0612/MustHave/w16h161339196030StockIndexUp16x16.png',
 				title: "Hello World!",
 				zIndex: 999,
 			  });
