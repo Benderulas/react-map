@@ -1,0 +1,22 @@
+.marker-ui {
+    width: 50px;
+    height: 200px;
+    position: absolute;
+    right: 20px;
+    top: 50px;
+    background-color: red;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+    align-items: center;
+  }
+
+.btn {
+    width: 40px;
+    height: 40px;
+    font-size: 10px;
+}
+
+.btn-active {
+    background-color: green;
+}

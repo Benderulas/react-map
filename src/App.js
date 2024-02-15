@@ -1,6 +1,7 @@
 import {Loader, LoaderOptions} from 'google-maps';
 import { useState, useEffect, useRef } from 'react';
 import './App.css';
+import MarkerUI from './components/MarkerUI';
 
 const GOOGLE_API_KEY = 'AIzaSyBuOglV9VCd8IBixqHKgC87HtX7IQ3Gdoo';
 const DEFAULT_MAP_CENTER = { lat: 43.261001, lng: 28.029099 };
@@ -77,43 +78,6 @@ function App() {
 				draggable: true,
 			  });
 			marker.setMap(newMap);
-
-			newMap.addListener('click', (event) => {
-				var bounds = newMap.getBounds();
-				var topRight = bounds.getNorthEast();
-				var bottomLeft = bounds.getSouthWest();
-
-				console.log(event);
-
-				const width = mapRef.current.offsetWidth;
-				const height = mapRef.current.offsetHeight;
-
-				const lng_base = bottomLeft.lng();
-				const lat_base = topRight.lat();
-
-				const widthpx = (topRight.lng() - bottomLeft.lng()) / width;
-				const heightpx = (bottomLeft.lat() - topRight.lat()) / height;
-
-				const new_x = event.domEvent.x / scaleRef.current + width * (1 - 1 / scaleRef.current) / 2;
-				const new_y = event.domEvent.y / scaleRef.current + height * (1 - 1 / scaleRef.current) / 2;
-
-				let position = {
-					lng: lng_base + new_x * widthpx,
-					lat: lat_base + new_y * heightpx,
-				}
-				console.log (position, event.latLng.lng(), event.latLng.lat());
-
-				new google.maps.Marker({
-					position: position,
-					icon: 'http://s1.iconbird.com/ico/0612/MustHave/w16h161339196030StockIndexUp16x16.png',
-					title: "Hello World!",
-					zIndex: 999,
-					draggable: true,
-					map: newMap,
-				  });
-			})
-
-
 			newMap.addListener('zoom_changed', _ => {
 				setZoom(newMap.getZoom());
 			})
@@ -191,15 +155,23 @@ function App() {
 	}
 
   return (
-    <div 
-		id="global-map" 
-		className="global-map" 
-		style={{transform: 'scale(' + scale + ')'}} 
-		ref={mapRef}
-		onWheel={handleScroll}
-	>
-      
-    </div>
+	<div style={{height: '100%' }}>
+		<div 
+			id="global-map" 
+			className="global-map" 
+			style={{transform: 'scale(' + scale + ')'}} 
+			ref={mapRef}
+			onWheel={handleScroll}
+		>
+		</div>
+		<MarkerUI 
+			map={map}
+			mapRef={mapRef}
+			scaleRef={scaleRef}
+			google={google}
+		/>
+	</div>
+    
   );
 }
 
