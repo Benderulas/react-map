@@ -1,5 +1,6 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import './MarkerUI.css'
+import { createMarker, hideMarker, showMarker, unbindMap } from './Marker';
 
 function calcLatLng(map, mapRef, scaleRef, event) {
     var bounds = map.getBounds();
@@ -29,11 +30,11 @@ function MarkerUI ({map, mapRef, scaleRef, google}) {
     const [addMarkerFlag, setAddMarkerFlag] = useState(false);
     const [markers, setMarkers] = useState([]);
     const [mapClickListener, setMapClickListener] = useState(null);
+    const markersRef = useRef([]);
 
-
-    function addHandler() {
-        setAddMarkerFlag(!addMarkerFlag);
-    }
+    useEffect(_ => {
+        markersRef.value = markers;
+    }, [markers])
 
     useEffect(_ => {
         if (mapClickListener !== null) {
@@ -41,44 +42,39 @@ function MarkerUI ({map, mapRef, scaleRef, google}) {
         }
 
         if (map === null || google === null) {
-            return
+            return;
         }
 
         if (addMarkerFlag) {            
             setMapClickListener(map.addListener('click', (event) => {
-                const newMarker = new google.maps.Marker({
-                    position: calcLatLng(map, mapRef, scaleRef, event),
-                    icon: 'http://s1.iconbird.com/ico/0612/MustHave/w16h161339196030StockIndexUp16x16.png',
-                    title: "Hello World!",
-                    zIndex: 999,
-                    draggable: true,
-                    clickable: true,
-                    map: map,
-                  });
+                const worldPosition = calcLatLng(map, mapRef, scaleRef, event);
+                const newMarker = createMarker(map, google, worldPosition);
 
                 setMarkers([...markers, newMarker]);
             }))
         }
     }, [markers, addMarkerFlag]);
 
-    function setVisibleForAll(visible) {
-        markers.forEach(marker => marker.setVisible(visible));
+    function addHandler() {
+        setAddMarkerFlag(!addMarkerFlag);
     }
 
     function hideHandler() {
-        setVisibleForAll(false);
+        markers.forEach(marker => {
+            hideMarker(marker);
+        })
     }
 
     function showHandler() {
-        setVisibleForAll(true);
+        markers.forEach(marker => {
+            showMarker(marker);
+        })
     }
 
     function delHanlder() {
-        markers.forEach(marker => marker.setMap(null));
+        markers.forEach(marker => unbindMap(marker));
         setMarkers([]);
     }
-
-
 
     return (
         <div className="marker-ui">

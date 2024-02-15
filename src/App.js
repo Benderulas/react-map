@@ -1,7 +1,7 @@
 import {Loader, LoaderOptions} from 'google-maps';
 import { useState, useEffect, useRef } from 'react';
 import './App.css';
-import MarkerUI from './components/MarkerUI';
+import MarkerUI from './components/MarkerUI/MarkerUI';
 
 const GOOGLE_API_KEY = 'AIzaSyBuOglV9VCd8IBixqHKgC87HtX7IQ3Gdoo';
 const DEFAULT_MAP_CENTER = { lat: 43.261001, lng: 28.029099 };
@@ -70,14 +70,6 @@ function App() {
             };
 
 			const newMap = new google.maps.Map(mapRef.current, mapOptions);
-			const marker = new google.maps.Marker({
-				position: DEFAULT_MAP_CENTER,
-				icon: 'http://s1.iconbird.com/ico/0612/MustHave/w16h161339196030StockIndexUp16x16.png',
-				title: "Hello World!",
-				zIndex: 999,
-				draggable: true,
-			  });
-			marker.setMap(newMap);
 			newMap.addListener('zoom_changed', _ => {
 				setZoom(newMap.getZoom());
 			})
