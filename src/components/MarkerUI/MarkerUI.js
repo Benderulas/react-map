@@ -32,6 +32,9 @@ function MarkerUI ({map, mapRef, scaleRef, google}) {
     const [mapClickListener, setMapClickListener] = useState(null);
     const markersRef = useRef([]);
 
+    const [moveFlag, setMoveFlag] = useState(false);
+    const [moveInterval, setMoveInterval] = useState(null);
+
     useEffect(_ => {
         markersRef.value = markers;
     }, [markers])
@@ -76,8 +79,55 @@ function MarkerUI ({map, mapRef, scaleRef, google}) {
         setMarkers([]);
     }
 
+    function moveHandler() {
+        if (moveFlag) {
+            setMoveFlag(false);
+
+            if (moveInterval) {
+                clearInterval(moveInterval);
+                setMoveInterval(null);
+            }
+        } else {
+            setMoveFlag(true);
+            const startTime = new Date();
+
+            const newInterval = setInterval( _=> {
+                const currentTime = new Date();
+                const baseSpeed = 0.000001;
+                const rotationSpeed = 2;
+
+                const xSpeed = (Math.floor((currentTime - startTime) / 1000) % 11 - 5) / 5;
+                const ySpeed = (Math.floor((currentTime - startTime + 3000) / 1000) % 11 - 5) / 5 ;
+
+                console.log(xSpeed, ySpeed);
+
+                markersRef.value.forEach(marker => {
+                    const newPosition = {
+                        lat: marker.getPosition().lat() + xSpeed * baseSpeed,
+                        lng: marker.getPosition().lng() + ySpeed * baseSpeed,
+                    };
+
+                    const newIcon = marker.getIcon();
+                    newIcon.rotation += rotationSpeed;
+
+                    marker.setPosition(newPosition);
+                    marker.setIcon(newIcon);
+                })
+
+            }, 20)
+
+            setMoveInterval(newInterval);
+        }
+    }
+
     return (
         <div className="marker-ui">
+            <button 
+                className={'btn ' +  (moveFlag ? 'btn-active' : '')}
+                onClick={moveHandler}
+            >
+                Move
+            </button>
             <button 
                 className={'btn ' +  (addMarkerFlag ? 'btn-active' : '')}
                 onClick={addHandler}

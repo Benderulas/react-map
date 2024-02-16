@@ -1,7 +1,14 @@
 export function createMarker(map, google, position) {
     const marker = new google.maps.Marker({
         position: position,
-        icon: 'http://s1.iconbird.com/ico/0612/MustHave/w16h161339196030StockIndexUp16x16.png',
+        icon: { 
+            path: "M -6 4 L 6 4 L 0 -8 Z",
+            strokeColor: "#F00",
+            fillColor: "#F00",
+            fillOpacity: 1,
+            scale: 1,
+            rotation: 90,
+        },
         title: "Hello World!",
         zIndex: 999,
         draggable: false,
