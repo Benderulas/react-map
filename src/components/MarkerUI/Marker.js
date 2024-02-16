@@ -4,7 +4,7 @@ export function createMarker(map, google, position) {
         icon: 'http://s1.iconbird.com/ico/0612/MustHave/w16h161339196030StockIndexUp16x16.png',
         title: "Hello World!",
         zIndex: 999,
-        draggable: true,
+        draggable: false,
         clickable: true,
         map: map,
     });
